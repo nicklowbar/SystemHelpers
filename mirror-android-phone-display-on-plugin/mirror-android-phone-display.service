@@ -1,0 +1,6 @@
+[Unit]
+Description=Mirror Android display on phone
+
+[Service]
+ExecStart=/usr/local/bin/mirror-android-phone-display.sh
+Restart=on-failure
