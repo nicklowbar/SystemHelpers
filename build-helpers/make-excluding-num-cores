@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo $1
+if [ -z "{$1}" ];
+  then num_cores_excluded=0;
+  else num_cores_excluded=$1;
+fi
+num_cores_total=`nproc --all`
+echo "Total cores available: $num_cores_total. Excluding: $num_cores_excluded" 
+num_cores=$((num_cores_total-num_cores_excluded))
+echo "Invoking make -j$num_cores"
+make -j$num_cores
