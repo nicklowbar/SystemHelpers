@@ -1,0 +1,41 @@
+#!/bin/bash
+# note: This script is intended to be used whenever opening discord results in the client attempting to download an update .deb.
+# It would be better if we could check for updates on a schedule, but that requires some way to query Discord's API.
+# This script will attempt to download the latest version of the client and install it.
+
+# Helper function to Download the latest version of Discord for Linux and install via dpkg
+do_install_discord_dpkg() {
+    # Download the latest Discord client .deb file
+    echo "Downloading latest Discord for Linux deb package..."
+    wget "https://discord.com/api/download/stable?platform=linux&format=deb" -O /tmp/discord.deb
+    
+    # Perform installation
+    echo "Installing Discord for Linux deb package..."
+    sudo dpkg -i /tmp/discord.deb
+    rm /tmp/discord.deb
+}
+
+discord_is_running=$(test -n $(pgrep -l Discord))
+
+echo "Checking for updates for Discord for Linux..."
+discord_latest_version=$(curl "https://discord.com/api/updates/stable?platform=linux" | jq .name)
+echo "The latest version of Discord is $discord_latest_version"
+
+echo "Checking installed version..."
+discord_current_version=$(dpkg-query -W --showformat='"${Version}"' discord)
+if [ $discord_current_version = $discord_latest_version ]; then
+    echo "Discord is already up to date."
+    exit 0
+else
+    echo "Installing Discord for Linux v$discord_latest_version over v$discord_current_version"
+    do_install_discord_dpkg
+fi
+
+if [ -n $discord_is_running ]; then
+    echo "Restarting Discord client..."
+    # restart the running discord service.
+    # see: https://stackoverflow.com/questions/20338162/how-can-i-launch-a-new-process-that-is-not-a-child-of-the-original-process
+    # launch discord as a grandchild, then close stdin, stdout, and stderr and also disown the child process so init process takes ownership.
+    ( discord sleep 30 <&- >&- 2>&- & disown )
+fi
+exit 0
