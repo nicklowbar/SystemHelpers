@@ -1,0 +1,12 @@
+# This file is responsible for running update-discord on user session start.
+
+[Unit]
+Description=Update Discord Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/update-discord
+
+[Install]
+WantedBy=multi-user.target
